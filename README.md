@@ -66,11 +66,13 @@ class ClassificationModel(nn.Module):
 - **Preprocessing**:
   - PCA and UMAP for visualization.
   - Labels are encoded into integers.
+    
 ![paul15](paul15.png)
 ### Dataset II: `moignard15`
 - **Description**: Contains normalized data with 5 cell types.
 - **Preprocessing**:
   - Similar steps as Dataset I.
+    
 ![moignard15](moignard15.png)
 ---
 
