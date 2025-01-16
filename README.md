@@ -18,7 +18,7 @@ This repository contains a deep learning project utilizing a Transformer-based m
 - PyTorch 1.9+
 - Additional dependencies:
   ```bash
-  pip install numpy matplotlib scanpy[leiden] louvain umap-learn scikit-learn
+  pip install numpy matplotlib scanpy umap scikit-learn
   ```
 
 ---
@@ -66,12 +66,12 @@ class ClassificationModel(nn.Module):
 - **Preprocessing**:
   - PCA and UMAP for visualization.
   - Labels are encoded into integers.
-
+![paul15](paul15.png)
 ### Dataset II: `moignard15`
 - **Description**: Contains normalized data with 5 cell types.
 - **Preprocessing**:
   - Similar steps as Dataset I.
-
+![moignard15](moignard15.png)
 ---
 
 ## Training and Testing
@@ -100,9 +100,8 @@ test_accuracy, classification_report_str, test_latent, test_predictions = test_m
 
 ### Results
 - **Dataset I**: 92.86% accuracy
-![Dataset I](dataset1.png)
+
 - **Dataset II**: 76.75% accuracy
-![Dataset II](dataset2.png)
 
 ---
 
@@ -114,28 +113,18 @@ plt.scatter(latent_2d[:, 0], latent_2d[:, 1], c=predicted_categories, cmap='viri
 plt.title("Latent Space Visualization")
 plt.show()
 ```
+- **Dataset I**:
+  
+![Dataset I](dataset1.png)
+
+- **Dataset II**: 
+![Dataset II](dataset2.png)
 
 ---
 
 ## Key Observations
 - **Performance**: Raw count data yields better results than normalized data.
 - **Visualization**: Clear separation of cell types in latent space.
-
----
-
-## How to Use
-
-1. Clone the repository:
-   ```bash
-   git clone <repo-url>
-   cd <repo-directory>
-   ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Train and test the model:
-   Modify the dataset loading and preprocessing steps in `main.py` to use your dataset.
 
 ---
 
