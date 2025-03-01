@@ -33,28 +33,22 @@ The model comprises three main components:
 
 ### Code Example
 ```python
-class ClassificationModel(nn.Module):
-    def __init__(self, input_dim, latent_dim, num_classes, num_heads=2, num_layers=2, dropout=0.1):
-        super(ClassificationModel, self).__init__()
-        self.encoder = nn.Sequential(
-            nn.Linear(input_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.Linear(64, latent_dim)
-        )
-        encoder_layer = nn.TransformerEncoderLayer(d_model=latent_dim, nhead=num_heads, dim_feedforward=latent_dim * 4, dropout=dropout)
-        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
-        self.classifier = nn.Linear(latent_dim, num_classes)
+# Initialize model, criterion, and optimizer
+model = ClassificationModel(input_dim, latent_dim, num_classes)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-    def forward(self, x):
-        latent = self.encoder(x)
-        latent = latent.unsqueeze(1).permute(1, 0, 2)
-        transformer_output = self.transformer(latent).squeeze(0)
-        predicted_labels = self.classifier(transformer_output)
-        return transformer_output, predicted_labels
+# Train the model
+epoch_losses = train_model(model, criterion, optimizer, X_train_tensor, y_train_tensor, num_epochs, batch_size)
+
+# Plot training loss
+plot_loss(epoch_losses)
+
+# Test the model
+test_accuracy, classification_report_str, test_latent, test_predictions = test_model(model, X_test_tensor, y_test)
+print(f"Test Accuracy: {test_accuracy:.4f}")
+print("Classification Report:")
+print(classification_report_str)
 ```
 
 ---
