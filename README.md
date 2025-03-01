@@ -27,28 +27,74 @@ This repository contains a deep learning project utilizing a Transformer-based m
 
 ### Overview
 The model comprises three main components:
-1. **Encoder**: Compresses high-dimensional input into a latent representation.
-2. **Transformer Encoder**: Processes the latent representation to capture dependencies between features.
-3. **Classifier**: Outputs predicted cell type probabilities.
+1. **Encoder**: Compresses high-dimensional input into a latent representation, to mimic RNA to high-level RNA regulators.
+2. **Embeding**: Embeds high-level RNA regulators to features.
+3. **Transformer**: Processes the latent representation to capture dependencies between regulators.
+4. **Classifier**: Outputs predicted cell type probabilities.
 
 ### Code Example
 ```python
-# Initialize model, criterion, and optimizer
-model = ClassificationModel(input_dim, latent_dim, num_classes)
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+class ClassificationModel(nn.Module):
+    def __init__(self, input_dim, latent_dim, embed_dim, num_classes, num_heads=2, num_layers=2, dropout=0.1):
+        """
+        A classification model with a transformer layer applied to the encoded features as a sequence.
 
-# Train the model
-epoch_losses = train_model(model, criterion, optimizer, X_train_tensor, y_train_tensor, num_epochs, batch_size)
+        Args:
+            input_dim (int): Number of features in the input.
+            latent_dim (int): Dimensionality of the latent space.
+            embed_dim (int): Dimensionality of token embeddings.
+            num_classes (int): Number of output classes.
+            num_heads (int): Number of attention heads in the transformer layer.
+            num_layers (int): Number of transformer encoder layers.
+            dropout (float): Dropout rate in the transformer.
+        """
+        super(ClassificationModel, self).__init__()
 
-# Plot training loss
-plot_loss(epoch_losses)
+        # Encoder
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, latent_dim)
+        )
 
-# Test the model
-test_accuracy, classification_report_str, test_latent, test_predictions = test_model(model, X_test_tensor, y_test)
-print(f"Test Accuracy: {test_accuracy:.4f}")
-print("Classification Report:")
-print(classification_report_str)
+        # Embedding
+        self.feature_projection = nn.Linear(1, embed_dim)  # Expands feature dimension
+        
+        # Transformer encoder with batch_first=True
+        assert embed_dim % num_heads == 0, "embed_dim must be divisible by num_heads"
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=embed_dim, nhead=num_heads, dim_feedforward=embed_dim * 4, dropout=dropout, batch_first=True
+        )
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+
+        # Classification
+        self.classifier = nn.Linear(latent_dim * embed_dim, num_classes)  # Flattened transformer output
+
+    def forward(self, x):
+        # Apply encoder first
+        latent = self.encoder(x)  # Shape: (batch_size, latent_dim)
+        print(f"Encoder output shape: {latent.shape}")
+
+        batch_size = latent.size(0)
+        latent = latent.unsqueeze(2)  # Reshape to (batch_size, latent_dim, 1)
+
+        # Expand feature representation
+        latent = self.feature_projection(latent)  # Shape: (batch_size, latent_dim, embed_dim)
+
+        # Apply transformer (batch_first=True means input shape is (batch, seq_len, d_model))
+        transformer_output = self.transformer(latent)  # Shape: (batch_size, latent_dim, embed_dim)
+
+        # Flatten sequence output before classification
+        transformer_output = transformer_output.view(batch_size, -1)  # Shape: (batch_size, latent_dim * embed_dim)
+
+        # Classification head
+        predicted_labels = self.classifier(transformer_output)  # Shape: (batch_size, num_classes)
+
+        return transformer_output, predicted_labels
 ```
 
 ---
