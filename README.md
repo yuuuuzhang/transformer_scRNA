@@ -64,7 +64,7 @@ class ClassificationModel(nn.Module):
         # Embedding
         self.feature_projection = nn.Linear(1, embed_dim)  # Expands feature dimension
         
-        # Transformer encoder with batch_first=True
+        # Transformer  
         assert embed_dim % num_heads == 0, "embed_dim must be divisible by num_heads"
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=embed_dim, nhead=num_heads, dim_feedforward=embed_dim * 4, dropout=dropout, batch_first=True
