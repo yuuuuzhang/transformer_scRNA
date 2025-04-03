@@ -123,6 +123,7 @@ Define hyperparameters:
 ```python
 input_dim = X_train_tensor.shape[1]
 latent_dim = 16
+embed_dim = 32
 num_classes = len(np.unique(y))
 learning_rate = 0.001
 batch_size = 32
